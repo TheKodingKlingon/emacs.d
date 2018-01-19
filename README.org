@@ -1,0 +1,11 @@
+* emacs.d
+
+Here I am again after having declared [[https://www.emacswiki.org/emacs/DotEmacsBankruptcy][.emacs bankruptcy]] twice since early 2014 ([[https://github.com/microamp/.emacs.d][1]], [[https://github.com/microamp/.spacemacs.d][2]]). Because life can always start up anew.
+
+* Screenshots
+
+  - [[https://imgur.com/a/yTZb1][First rice of 2018 featuring dwm, st, dvtm and emacs]]
+
+* License
+
+GPL-3.0
