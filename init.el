@@ -18,38 +18,19 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-;; Set up some custom key bindings
-(global-set-key (kbd "C-x k") #'kill-this-buffer)
-
-(use-package zoom-window
-  :ensure t
-  :defer t
-  :bind (("C-x l" . zoom-window-zoom)
-         ("C-x j" . zoom-window-next))
-  :init
-  (setq-default zoom-window-mode-line-color "light blue"))
-
-(global-set-key (kbd "C-x L") #'delete-other-windows)
-(global-set-key (kbd "C-x q") #'delete-window)
-(global-set-key (kbd "C-x \\") #'split-window-horizontally)
-(global-set-key (kbd "C-x -") #'split-window-vertically)
+;; Minimise distraction
+(blink-cursor-mode 0)
 
 ;; Stop cluttering with backup files
 (setq backup-directory-alist '((".*" . "~/.emacs.d/.tmp")))
 (setq make-backup-files nil) ; stop creating backup~ files
 (setq auto-save-default nil) ; stop creating #autosave# files
 
-;; Default web browser
-(setq browse-url-browser-function 'browse-url-firefox)
-
 ;; Tabs are evil
 (setq-default indent-tabs-mode nil)
 
 ;; No alarm bells
 (setq ring-bell-function 'ignore)
-
-;; Split windows vertically by default
-(setq split-width-threshold nil)
 
 ;; Select *help* buffer automatically
 (setq help-window-select t)
@@ -63,9 +44,6 @@
 ;; Set default font
 (set-frame-font "DejaVu Sans Mono-10" nil t)
 
-;; Prefer y/n to yes/no
-(defalias 'yes-or-no-p 'y-or-n-p)
-
 ;; No startup screen
 (setq inhibit-splash-screen t)
 (setq inhibit-startup-message t)
@@ -73,8 +51,30 @@
 ;; Die whitespaces, die!
 (add-to-list 'write-file-functions #'delete-trailing-whitespace)
 
+;; Customisation info to be saved in a separate file
+(setq custom-file "~/.emacs.d/custom.el")
+
 ;; Show row and column numbers
 (column-number-mode 1)
+
+;; Load theme
+(use-package color-theme-sanityinc-tomorrow
+  :ensure t
+  :config
+  (load-theme 'sanityinc-tomorrow-night t))
+
+;; Highlight matching parens
+(use-package paren
+  :init
+  (show-paren-mode 1))
+
+;; Refresh buffer when changed on disk
+(use-package autorevert
+  :diminish auto-revert-mode
+  :init
+  (setq auto-revert-interval 2)
+  :config
+  (global-auto-revert-mode 1))
 
 ;; Try packages without installing them
 (use-package try
@@ -83,60 +83,12 @@
 (use-package diminish
   :ensure t)
 
-;; Load theme nord
-(use-package nord-theme
-  :ensure t
-  :config
-  (load-theme 'nord t))
-
-;; Highlight matching parens
-(use-package paren
-  :init
-  (show-paren-mode 1))
-
-;; "How can I replace highlighted text with what I type?" (Emacs FAQ)
-(use-package delsel
-  :config
-  (delete-selection-mode 1))
-
-;; Refresh buffer when changed on disk
-(use-package autorevert
-  :diminish auto-revert-mode
-  :config
-  (global-auto-revert-mode 1))
-
-;; Highlight hex colours
 (use-package rainbow-mode
   :ensure t
   :diminish rainbow-mode)
 
-(use-package exec-path-from-shell
-  :ensure t
-  :if (memq window-system '(ns x))
-  :config
-  (exec-path-from-shell-initialize))
-
 (use-package hydra
   :ensure t)
-
-;; Such extensive editor, many key binding, wow
-(use-package which-key
-  :ensure t
-  :diminish which-key-mode
-  :config
-  (which-key-mode))
-
-;; Enable syntax highlighting in programming modes
-(use-package flycheck
-  :ensure t
-  :init
-  (setq-default flycheck-idle-change-delay 0.5)
-  :config
-  (defhydra hydra-flycheck-error (global-map "C-c ! !")
-    "Flycheck errors"
-    ("n" flycheck-next-error "next error")
-    ("p" flycheck-previous-error "previous error"))
-  (add-hook 'prog-mode-hook #'flycheck-mode))
 
 ;; Enable autocomplete in programming modes
 (use-package company
@@ -145,47 +97,73 @@
   :init
   (setq-default company-echo-delay 0
                 company-idle-delay 0.2
-                company-minimum-prefix-length 3)
+                company-minimum-prefix-length 1)
   :config
   (add-hook 'prog-mode-hook #'company-mode))
 
+(use-package company-quickhelp
+  :ensure t
+  :hook (company-mode . company-quickhelp-mode))
+
+;; Enable syntax highlighting in programming modes
+(use-package flycheck
+  :ensure t
+  :diminish flycheck-mode
+  :init
+  (setq-default flycheck-idle-change-delay 0.5
+                flycheck-check-syntax-automatically '(mode-enabled save))
+  :config
+  (add-hook 'prog-mode-hook #'flycheck-mode))
+
+(use-package flymake
+  :diminish flymake-mode
+  :config
+  (defhydra hydra-flymake-error (global-map "C-c ! !")
+    "Flymake errors"
+    ("n" flymake-goto-next-error "next error")
+    ("p" flymake-goto-prev-error "previous error")))
+
+;; Such extensive editor, many key binding, wow
+(use-package which-key
+  :ensure t
+  :diminish which-key-mode
+  :config
+  (which-key-mode))
+
+(use-package eglot
+  :ensure t
+  :config
+  (add-to-list 'eglot-server-programs '(python-mode . ("pyls")))
+  (add-to-list 'eglot-server-programs '(js2-mode . ("javascript-typescript-stdio")))
+  (add-to-list 'eglot-server-programs '(typescript-mode . ("javascript-typescript-stdio")))
+  (add-to-list 'eglot-server-programs '(javascript-mode . ("javascript-typescript-stdio"))))
+
+(use-package lsp-mode
+  :ensure t
+  :init
+  (add-hook 'python-mode-hook #'lsp)
+  (add-hook 'js2-mode-hook #'lsp)
+  (add-hook 'javascript-mode-hook #'lsp)
+  (add-hook 'typescript-mode-hook #'lsp))
+
+(use-package company-lsp
+  :ensure t
+  :after lsp-mode
+  :init
+  (setq company-lsp-async t
+        company-lsp-enable-recompletion t
+        company-lsp-enable-snippet nil)
+  :config
+  (push 'company-lsp company-backends))
 
 (use-package markdown-mode
   :ensure t
   :mode ("\\.md\\'" . markdown-mode))
 
-;; Sometimes the best fix is turning it off and on again
-(use-package restart-emacs
-  :ensure t
-  :defer t
-  :bind (("C-x M-r" . restart-emacs))
-  :init
-  (setq restart-emacs-restore-frames t))
-
-;; Move Where I Mean
 (use-package mwim
   :ensure t
   :defer t
-  :bind (("C-a" . mwim-beginning-of-code-or-line)
-	 ("C-e" . mwim-end)))
-
-;; Win at windowing
-(use-package ace-window
-  :ensure t
-  :defer t
-  :bind (("C-x o" . ace-window))
-  :init
-  (setq aw-keys '(?h ?j ?k ?l ?a ?s ?d ?f)))
-
-(use-package feature-mode
-  :ensure t
-  :mode ("\\.feature\\'". feature-mode))
-
-(use-package json-mode
-  :ensure t
-  :mode ("\\.json\\'" . json-mode)
-  :init
-  (setq-default js-indent-level 2))
+  :bind (("C-a" . mwim-beginning-of-code-or-line)))
 
 ;; Add JS support
 (use-package js2-mode
@@ -193,10 +171,11 @@
   :mode ("\\.js\\'" . js2-mode)
   :defer t
   :bind (:map js2-mode-map
-         ("C-c C-j" . counsel-imenu))
+         ("C-c C-j" . counsel-semantic-or-imenu)
+         ("M-." . lsp-find-definition)
+         ("C-c C-c C-d" . eglot-help-at-point))
   :init
-  (setq-default js2-basic-offset 2
-		js2-strict-trailing-comma-warning nil)
+  (setq-default js2-basic-offset 2)
   :config
   (add-hook 'js2-mode-hook #'js2-imenu-extras-mode))
 
@@ -232,95 +211,44 @@
   :config
   (add-hook 'js2-mode-hook (lambda () (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t))))
 
-(use-package rjsx-mode
+(use-package json-mode
   :ensure t
-  :defer t
+  :mode ("\\.[json|tpl]\\'" . json-mode)
   :init
-  (setq-default js2-strict-trailing-comma-warning nil))
+  (setq-default js-indent-level 2))
 
 (use-package prettier-js
   :ensure t
   :diminish prettier-js-mode
-  :after (rjsx-mode js2-mode)
-  :init
-  (add-hook 'rjsx-mode-hook 'prettier-js-mode)
-  (add-hook 'js2-mode-hook 'prettier-js-mode)
-  :config
-  (setq prettier-js-args '("--trailing-comma" "all"
-			   "--single-quote" "true")))
+  :hook
+  (js2-mode . prettier-js-mode)
+  (typescript-mode . prettier-js-mode))
 
 (use-package typescript-mode
   :ensure t
-  :mode ("\\.ts\\'" "\\.tsx\\'"))
+  :mode ("\\.ts\\'" . typescript-mode))
 
 (use-package tide
   :ensure t
-  :after (typescript-mode company flycheck)
-  :hook ((typescript-mode . tide-setup)
-         (typescript-mode . tide-hl-identifier-mode)
-         (before-save . tide-format-before-save)))
+  :diminish tide-mode
+  :after typescript-mode
+  :config
+  (add-hook 'typescript-mode-hook #'tide-setup))
 
 (use-package fill-column-indicator
+  :disabled
   :ensure t
   :init
+  (setq fci-rule-column 99)
   (add-hook 'python-mode-hook #'fci-mode))
-
-(use-package python
-  :mode ("\\.py\\'" . python-mode)
-  :defer t
-  :bind (:map python-mode-map
-         ("C-c C-j" . counsel-imenu))
-  :init
-  (setq python-shell-interpreter "ipython"
-        python-shell-interpreter-args "--simple-prompt -i"
-        python-shell-virtualenv-root "~/.venv"
-        python-shell-completion-native-disabled-interpreters '("ipython" "pypy")))
-
-(use-package company-jedi
-  :ensure t
-  :after python
-  :defer t
-  :bind (:map python-mode-map
-         ("M-." . jedi:goto-definition)
-         ("M-," . jedi:goto-definition-pop-marker))
-  :init
-  (setq jedi:complete-on-dot t)
-  (add-hook 'python-mode-hook (lambda () (add-to-list 'company-backends 'company-jedi))))
-
-(use-package yapfify
-  :ensure t
-  :after python
-  :init
-  (add-hook 'python-mode-hook 'yapf-mode))
-
-(use-package slime
-  :ensure t
-  :config
-  (setq inferior-lisp-program "sbcl"
-	slime-contribs '(slime-fancy)))
-
-(use-package geiser
-  :ensure t)
-
-(use-package csv-mode
-  :ensure t
-  :mode ("\\.csv\\'" . csv-mode))
 
 (use-package yaml-mode
   :ensure t
   :mode ("\\.yml\\'" . yaml-mode))
 
 (use-package treemacs
+  :disabled
   :ensure t)
-
-(use-package treemacs-projectile
-  :after treemacs projectile
-  :ensure t)
-
-(use-package sql
-  :mode ("\\.sql\\'" . sql-mode)
-  :init
-  (add-hook 'sql-interactive-mode-hook #'smartparens-mode))
 
 (use-package undo-tree
   :ensure t
@@ -332,20 +260,19 @@
         undo-tree-visualizer-timestamps t)
   (global-undo-tree-mode)
   :config
-  ;; NOTE: `undo-tree-visualizer-diff' is disabled on exit for some reason, turn it back on!
   (advice-add 'undo-tree-visualizer-quit :after (lambda () (setq undo-tree-visualizer-diff t))))
 
 ;; Magit is magical
 (use-package magit
   :ensure t
-  :bind (("C-c m b" . magit-blame)
+  :bind (("C-c m b" . magit-blame-addition)
          ("C-c m l" . magit-log-current)
+         ("C-c m L" . magit-log-buffer-file)
          ("C-c m m" . magit-show-refs-head)
          ("C-c m s" . magit-status))
   :init
-  (setq magit-diff-refine-hunk 'all)
-  (advice-add 'magit-show-refs-head :after #'delete-other-windows)
-  (advice-add 'magit-status :after #'delete-other-windows))
+  (setq-default magit-diff-refine-hunk 'all
+                projectile-switch-project-action 'magit-show-refs-head))
 
 (use-package git-timemachine
   :ensure t
@@ -361,8 +288,15 @@
   :defer t
   :bind (("C-c m w" . browse-at-remote)))
 
-(use-package edit-server
-  :ensure t)
+(use-package git-gutter
+  :disabled
+  :ensure t
+  :bind (("C-c m g" . git-gutter-mode))
+  :init
+  (setq git-gutter:always-show-separator t
+        git-gutter:window-width 1)
+  (global-git-gutter-mode 1))
+
 
 ;; Smart parentheses are smart
 (use-package smartparens
@@ -382,10 +316,19 @@
          ("C-M-n" . sp-next-sexp)
          ("C-M-p" . sp-previous-sexp)
          ("C-M-u" . sp-backward-up-sexp)
-         ("C-]" . sp-select-next-thing-exchange))
+         ("C-]" . sp-select-next-thing-exchange)
+         ("C-)" . sp-forward-slurp-sexp)
+         ("C-<right>" . sp-forward-slurp-sexp)
+         ("C-}" . sp-forward-barf-sexp)
+         ("C-<left>" . sp-forward-barf-sexp)
+         ("C-(" . sp-backward-slurp-sexp)
+         ("C-M-<left>" . sp-backward-slurp-sexp)
+         ("C-{" . sp-backward-barf-sexp)
+         ("C-M-<right>" . sp-backward-barf-sexp))
   :init
   ;; Use it everywhere
   (smartparens-global-mode 1)
+  (show-smartparens-mode 1)
   :config
   ;; Use default config
   (use-package smartparens-config)
@@ -405,20 +348,6 @@
   (setq-default dumb-jump-selector 'ivy
                 dumb-jump-prefer-search 'rg))
 
-;; Use `browse-kill-ring' instead of `counsel-yank-pop'
-(use-package browse-kill-ring
-  :ensure t
-  :defer t
-  :bind (("C-c r y" . browse-kill-ring)
-         :map browse-kill-ring-mode-map
-         ("C-g" . browse-kill-ring-quit))
-  :init
-  (setq browse-kill-ring-highlight-current-entry t
-        browse-kill-ring-highlight-inserted-item t
-        browse-kill-ring-display-duplicates nil
-        browse-kill-ring-resize-window '(25 . 25)
-        browse-kill-ring-show-preview nil))
-
 ;; Make M-x smart again
 (use-package smex
   :ensure t
@@ -428,7 +357,7 @@
 (use-package avy
   :ensure t
   :defer t
-  :bind (("C-'" . avy-goto-word-1))
+  :bind (("C-:" . avy-goto-word-1))
   :config
   (avy-setup-default))
 
@@ -495,6 +424,7 @@
 
 (use-package counsel
   :ensure t
+  :diminish counsel-mode
   :defer t
   :after ivy
   :bind (("M-x" . counsel-M-x)
@@ -503,8 +433,31 @@
          ("C-h v" . counsel-describe-variable)
          ("C-h M-f" . counsel-describe-face)
          ("C-x r b" . counsel-bookmark)
-         ("C-c C-j" . counsel-imenu)
-         ("C-x M-t" . counsel-load-theme)))
+         ("C-c C-j" . counsel-semantic-or-imenu)
+         ("C-x M-t" . counsel-load-theme)
+         ("M-y" . counsel-yank-pop)
+         :map ivy-minibuffer-map
+         ("M-y" . ivy-next-line)
+         ("M-Y" . ivy-previous-line))
+  :init
+  (setq counsel-yank-pop-separator "
+                    
+")
+  (counsel-mode))
+
+;; Be helpful (Override counsel key bindings where possible)
+(use-package helpful
+  :ensure t
+  :after counsel
+  :bind (("C-h f" . helpful-callable)
+         ("C-h F" . helpful-function)
+         ("C-h v" . helpful-variable)
+         ("C-h k" . helpful-key)
+         ("C-c C-d" . helpful-at-point)
+         ("C-c C" . helpful-command)))
+
+(use-package elisp-mode
+  :bind ("C-c C-k" . eval-buffer))
 
 (use-package swiper
   :ensure t
@@ -516,15 +469,22 @@
     (interactive)
     (swiper (thing-at-point 'symbol))))
 
+(use-package ivy-lobsters
+  :ensure t)
+
 ;; Project management at its best
 (use-package projectile
   :ensure t
   :diminish projectile-mode
   :init
-  (setq-default projectile-switch-project-action 'magit-show-refs-head
-                projectile-completion-system 'ivy)
+  (setq-default projectile-completion-system 'ivy
+                projectile-keymap-prefix (kbd "C-c p")
+                projectile-project-compilation-cmd ""
+                projectile-project-run-cmd ""
+                projectile-project-test-cmd "")
   :config
-  (projectile-mode))
+  (projectile-mode)
+  (define-key projectile-mode-map (kbd "C-c p F") #'counsel-fzf))
 
 ;; When Counsel meets Projectile (NOTE: Requires `rg')
 (use-package counsel-projectile
@@ -533,7 +493,13 @@
   :bind (:map projectile-mode-map
          ("C-c p s s" . counsel-projectile-rg))
   :init
-  (setq-default counsel-projectile-mode t))
+  ;; NOTE: Only counsel-projectile-rg command is needed from this package, do not override projectile key bindings
+  (setq-default counsel-projectile-mode nil))
 
+(use-package fzf
+  :ensure t
+  :init
+  (setq fzf/position-bottom t
+        fzf/window-height 20))
 
 ;;; init.el ends here
