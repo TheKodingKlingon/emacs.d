@@ -180,7 +180,6 @@
   (add-hook 'js2-mode-hook #'js2-imenu-extras-mode))
 
 (use-package company-tern
-  :disabled
   :ensure t
   :diminish term-mode
   :after js2-mode
@@ -202,7 +201,6 @@
   (add-hook 'js2-mode-hook #'js2-refactor-mode))
 
 (use-package xref-js2
-  :disabled
   :ensure t
   :after js2-mode
   :defer t
@@ -236,7 +234,6 @@
   (add-hook 'typescript-mode-hook #'tide-setup))
 
 (use-package fill-column-indicator
-  :disabled
   :ensure t
   :init
   (setq fci-rule-column 99)
@@ -247,7 +244,6 @@
   :mode ("\\.yml\\'" . yaml-mode))
 
 (use-package treemacs
-  :disabled
   :ensure t)
 
 (use-package undo-tree
@@ -289,7 +285,6 @@
   :bind (("C-c m w" . browse-at-remote)))
 
 (use-package git-gutter
-  :disabled
   :ensure t
   :bind (("C-c m g" . git-gutter-mode))
   :init
