@@ -181,11 +181,12 @@
 
 (use-package company-tern
   :ensure t
-  :diminish term-mode
+  :diminish tern-mode
   :after js2-mode
   :init
   (add-hook 'js2-mode-hook (lambda () (add-to-list 'company-backend 'company-tern)))
   :config
+  (setq tern-command (append tern-command '("--no-port-file")))
   (add-hook 'js2-mode-hook #'tern-mode))
 
 (use-package js2-refactor
@@ -218,6 +219,10 @@
 (use-package prettier-js
   :ensure t
   :diminish prettier-js-mode
+  :config
+  (setq prettier-js-args
+        '("--trailing-comma" "all"
+          "--single-quote" "all"))
   :hook
   (js2-mode . prettier-js-mode)
   (typescript-mode . prettier-js-mode))
