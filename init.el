@@ -25,6 +25,7 @@
 (setq backup-directory-alist '((".*" . "~/.emacs.d/.tmp")))
 (setq make-backup-files nil) ; stop creating backup~ files
 (setq auto-save-default nil) ; stop creating #autosave# files
+(setq create-lockfiles nil) ; stop creating .# files
 
 ;; Tabs are evil
 (setq-default indent-tabs-mode nil)
@@ -221,8 +222,9 @@
   :diminish prettier-js-mode
   :config
   (setq prettier-js-args
-        '("--trailing-comma" "all"
-          "--single-quote" "all"))
+        '("--trailing-comma" "es5"
+          "--single-quote" "all"
+          "--arrow-parens" "always"))
   :hook
   (js2-mode . prettier-js-mode)
   (typescript-mode . prettier-js-mode))
