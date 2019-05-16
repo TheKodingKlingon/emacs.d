@@ -18,9 +18,6 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-;; Minimise distraction
-(blink-cursor-mode 0)
-
 ;; Stop cluttering with backup files
 (setq backup-directory-alist '((".*" . "~/.emacs.d/.tmp")))
 (setq make-backup-files nil) ; stop creating backup~ files
@@ -29,6 +26,12 @@
 
 ;; Tabs are evil
 (setq-default indent-tabs-mode nil)
+
+;; Line cursor
+(setq-default cursor-type 'bar)
+
+;; Overwrite selected
+(delete-selection-mode t)
 
 ;; No alarm bells
 (setq ring-bell-function 'ignore)
@@ -57,6 +60,13 @@
 
 ;; Show row and column numbers
 (column-number-mode 1)
+
+;; Show indentation guides
+(use-package highlight-indent-guides
+  :ensure t
+  :config
+  (setq highlight-indent-guides-method 'character)
+  (add-hook 'prog-mode-hook 'highlight-indent-guides-mode))
 
 ;; Load theme
 (use-package color-theme-sanityinc-tomorrow
@@ -139,23 +149,6 @@
   (add-to-list 'eglot-server-programs '(typescript-mode . ("javascript-typescript-stdio")))
   (add-to-list 'eglot-server-programs '(javascript-mode . ("javascript-typescript-stdio"))))
 
-(use-package lsp-mode
-  :ensure t
-  :init
-  (add-hook 'python-mode-hook #'lsp)
-  (add-hook 'js2-mode-hook #'lsp)
-  (add-hook 'javascript-mode-hook #'lsp)
-  (add-hook 'typescript-mode-hook #'lsp))
-
-(use-package company-lsp
-  :ensure t
-  :after lsp-mode
-  :init
-  (setq company-lsp-async t
-        company-lsp-enable-recompletion t
-        company-lsp-enable-snippet nil)
-  :config
-  (push 'company-lsp company-backends))
 
 (use-package markdown-mode
   :ensure t
@@ -173,7 +166,6 @@
   :defer t
   :bind (:map js2-mode-map
          ("C-c C-j" . counsel-semantic-or-imenu)
-         ("M-." . lsp-find-definition)
          ("C-c C-c C-d" . eglot-help-at-point))
   :init
   (setq-default js2-basic-offset 2)
@@ -251,7 +243,9 @@
   :mode ("\\.yml\\'" . yaml-mode))
 
 (use-package treemacs
-  :ensure t)
+  :ensure t
+  :config
+  (add-hook 'after-init-hook 'treemacs))
 
 (use-package undo-tree
   :ensure t

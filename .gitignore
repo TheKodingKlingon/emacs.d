@@ -17,3 +17,6 @@ recentf
 smex-items
 temp.*
 url
+custom\.el
+
+transient/history\.el
