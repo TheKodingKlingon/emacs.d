@@ -68,6 +68,13 @@
   (setq highlight-indent-guides-method 'character)
   (add-hook 'prog-mode-hook 'highlight-indent-guides-mode))
 
+;; Highlight selection
+(use-package highlight-symbol
+  :ensure t
+  :config
+  (setq highlight-symbol-idle-delay 0)
+  (add-hook 'prog-mode-hook 'highlight-symbol-mode))
+
 ;; Load theme
 (use-package color-theme-sanityinc-tomorrow
   :ensure t
@@ -158,6 +165,14 @@
   :ensure t
   :defer t
   :bind (("C-a" . mwim-beginning-of-code-or-line)))
+
+;; HTML, CSS and template editing
+(use-package web-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
+  (add-to-list 'auto-mode-alist '("\\.hbs\\'" . web-mode)))
 
 ;; Add JS support
 (use-package js2-mode
