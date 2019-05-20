@@ -234,7 +234,8 @@
           "--arrow-parens" "always"))
   :hook
   (js2-mode . prettier-js-mode)
-  (typescript-mode . prettier-js-mode))
+  (typescript-mode . prettier-js-mode)
+  (web-mode . prettier-js-mode))
 
 (use-package typescript-mode
   :ensure t
