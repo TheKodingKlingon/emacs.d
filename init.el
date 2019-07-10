@@ -61,6 +61,8 @@
 ;; Show row and column numbers
 (column-number-mode 1)
 
+(setq-default css-indent-offset 2)
+
 ;; Show indentation guides
 (use-package highlight-indent-guides
   :ensure t
@@ -170,8 +172,9 @@
 (use-package web-mode
   :ensure t
   :config
+  (setq web-mode-indent-style 2)
+  (setq web-mode-markup-indent-offset 2)
   (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-  (add-to-list 'auto-mode-alist '("\\.scss\\'" . web-mode))
   (add-to-list 'auto-mode-alist '("\\.hbs\\'" . web-mode)))
 
 ;; Add JS support
@@ -235,7 +238,8 @@
   :hook
   (js2-mode . prettier-js-mode)
   (typescript-mode . prettier-js-mode)
-  (web-mode . prettier-js-mode))
+  (web-mode . prettier-js-mode)
+  (css-mode . prettier-js-mode))
 
 (use-package typescript-mode
   :ensure t
