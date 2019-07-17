@@ -63,6 +63,12 @@
 
 (setq-default css-indent-offset 2)
 
+;; Fix up the path
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (exec-path-from-shell-initialize))
+
 ;; Show indentation guides
 (use-package highlight-indent-guides
   :ensure t
